@@ -1,7 +1,7 @@
 import './style.css'
-import { setupCounter } from './counter.ts'
 import { io } from "socket.io-client";
 import * as THREE from 'three';
+import { OrbitControls } from 'three/examples/jsm/Addons.js';
 
 const socket = io()
 socket.on('message', (msg) => {
@@ -26,6 +26,7 @@ let rollOverMesh : THREE.Mesh;
 let rollOverMaterial : THREE.MeshBasicMaterial;
 let cubeGeo : THREE.BoxGeometry;
 let cubeMaterial : THREE.MeshLambertMaterial;
+let controls: OrbitControls
 
 const objects : THREE.Object3D[] = [];
 
@@ -82,6 +83,7 @@ function init() {
   renderer = new THREE.WebGLRenderer( { antialias: true , canvas} );
   renderer.setPixelRatio( window.devicePixelRatio );
   renderer.setSize( canvas.width, canvas.height );
+  controls = new OrbitControls( camera, renderer.domElement );
 
   canvas.addEventListener( 'pointermove', onPointerMove );
   canvas.addEventListener( 'pointerdown', onPointerDown );
@@ -95,16 +97,18 @@ function init() {
 }
 
 function onWindowResize() {
-
   camera.aspect = canvas.width / canvas.height;
   camera.updateProjectionMatrix();
   renderer.setSize( canvas.width, canvas.height );
-  render();
-
 }
 
 function onPointerMove( event: MouseEvent) {
-  pointer.set( ( event.clientX / window.innerWidth ) * 2 - 1, - ( event.clientY / window.innerHeight ) * 2 + 1 );
+  console.log((event.clientX - (event.target as HTMLElement).offsetLeft) / (event.target as HTMLElement).clientWidth)
+  console.log((event.clientY - (event.target as HTMLElement).offsetTop) / (event.target as HTMLElement).clientHeight)
+  const x = (event.clientX - (event.target as HTMLElement).offsetLeft) / (event.target as HTMLElement).clientWidth
+  const y = (event.clientY - (event.target as HTMLElement).offsetTop) / (event.target as HTMLElement).clientHeight
+  // pointer.set( ( event.clientX / window.innerWidth ) * 2 - 1, - ( event.clientY / window.innerHeight ) * 2 + 1 );
+  pointer.set( x * 2 - 1, - y * 2 + 1 );
   console.log(event.clientX, event.clientY, pointer.x, pointer.y)
   raycaster.setFromCamera( pointer, camera );
   const intersects = raycaster.intersectObjects( objects, false );
@@ -112,7 +116,6 @@ function onPointerMove( event: MouseEvent) {
     const intersect = intersects[ 0 ];
     rollOverMesh.position.copy( intersect.point ).add( intersect.face!.normal );
     rollOverMesh.position.divideScalar( 50 ).floor().multiplyScalar( 50 ).addScalar( 25 );
-    render();
   }
 }
 
@@ -142,11 +145,7 @@ function onPointerDown( event: MouseEvent) {
       objects.push( voxel );
 
     }
-
-    render();
-
   }
-
 }
 
 function onDocumentKeyDown( event: KeyboardEvent) {
@@ -162,5 +161,7 @@ function onDocumentKeyUp( event: KeyboardEvent ) {
 }
 
 function render() {
+  requestAnimationFrame(render)
+  controls.update();
   renderer.render( scene, camera );
 }
