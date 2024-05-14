@@ -40,9 +40,9 @@ model Voxel {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  x Int
-  y Int
-  z Int
+  x     Int
+  y     Int
+  z     Int
   color String
 
   map   Map @relation(fields: [mapId], references: [id])
