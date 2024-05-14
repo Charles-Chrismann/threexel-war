@@ -44,7 +44,8 @@ app.post("/api/register", async (req: Request, res: Response) => {
         }
       }
     })
-    res.send(user);
+    const token = sign({ id: user.id, username: user.username }, process.env.JWT_SECRET!)
+    res.send(token)
   } catch (e: any) {
     if(e instanceof PrismaClientKnownRequestError) return res.sendStatus(409)
     res.sendStatus(500)
@@ -61,6 +62,24 @@ app.post('/api/login', async (req: Request, res: Response) => {
   if(!user || !await compare(password, user.password)) return res.status(401).send({'status': '401', 'message': 'Mauvais identifiants'})
   const token = sign({ id: user.id, username: user.username }, process.env.JWT_SECRET!)
   res.status(200).send({'status': '200', 'message': 'success', 'token':token})
+})
+
+app.get('/api/map/:roomName', async (req: Request, res: Response) => {
+  try {
+    const map = await prisma.map.findFirst({
+      where: {
+        user: {
+          username: req.params.roomName
+        }
+      },
+      include: {
+        voxels: true
+      }
+    })
+    res.send(map?.voxels)
+  } catch (error) {
+    res.sendStatus(404)
+  }
 })
 
 io.use((socket, next) => {
@@ -112,7 +131,8 @@ io.on('connection', (socket) => {
         }
       })
       if(!map) return
-      const createdVoxel = tx.voxel.create({
+      console.log('eee')
+      const createdVoxel = await tx.voxel.create({
         data: {
           x: voxel.x,
           y: voxel.y,
@@ -122,22 +142,22 @@ io.on('connection', (socket) => {
           userId: socket.user.id
         }
       })
-      tx.userOnMap.update({
-        where: {
-          mapId_userId: {
-            mapId: map.id,
-            userId: socket.user.id
-          }
-        },
-        data: {
-          lastPlaced: new Date()
-        }
-      })
-      return true
+      // await tx.userOnMap.update({
+      //   where: {
+      //     mapId_userId: {
+      //       mapId: map.id,
+      //       userId: socket.user.id
+      //     }
+      //   },
+      //   data: {
+      //     lastPlaced: new Date()
+      //   }
+      // })
+      return createdVoxel
     })
     if(!txResult) return
-    console.log(voxel)
-    io.emit('update voxel', voxel)
+    console.log(txResult)
+    io.emit('update voxel', txResult)
   })
 })
 

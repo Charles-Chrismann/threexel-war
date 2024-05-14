@@ -2,7 +2,6 @@ import './style.css'
 import { io } from "socket.io-client";
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/Addons.js';
-import { sub } from 'three/examples/jsm/nodes/Nodes.js';
 
 const socket = io({
   auth: {
@@ -24,7 +23,9 @@ socket.on('update voxel', (voxel) => {
   setVoxel(voxel)
 })
 
-fetch('/api').then(res => res.json()).then(res => console.log('lares', res))
+fetch('/api/map/cmwa').then(res => res.json()).then((res: any) => {
+  res.forEach((voxel: any) => setVoxel(voxel))
+})
 
 
 // let camera, scene, renderer;
@@ -216,7 +217,7 @@ function onPointerDown( event: MouseEvent) {
         y: voxel.position.y,
         z: voxel.position.z,
         color: colorPicker.value,
-        roomName: "Tom"
+        roomName: "cmwa"
       })
       // scene.add( voxel );
 
