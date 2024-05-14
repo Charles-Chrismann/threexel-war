@@ -96,8 +96,12 @@ function init() {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({ username, password })
-      }).then(res => res.text()).then(res => {
-          localStorage.setItem('authorization', res)
+      }).then(res => res.json()).then(res => {
+          if(res.status !== '200') {
+            alert(res.message);
+            return
+          }
+          localStorage.setItem('authorization', res.token)
           location.reload()
         })
     })

@@ -58,11 +58,9 @@ app.post('/api/login', async (req: Request, res: Response) => {
       username
     }
   })
-  console.log(user)
-  if(!user) return res.sendStatus(401)
-  if(!await compare(password, user.password)) return res.sendStatus(401)
+  if(!user || !await compare(password, user.password)) return res.status(401).send({'status': '401', 'message': 'Mauvais identifiants'})
   const token = sign({ id: user.id, username: user.username }, process.env.JWT_SECRET!)
-  res.send(token)
+  res.status(200).send({'status': '200', 'message': 'success', 'token':token})
 })
 
 io.use((socket, next) => {
