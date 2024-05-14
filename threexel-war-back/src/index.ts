@@ -46,7 +46,7 @@ app.post("/api/register", async (req: Request, res: Response) => {
     })
     res.send(user);
   } catch (e: any) {
-    if(e instanceof PrismaClientKnownRequestError) res.sendStatus(409)
+    if(e instanceof PrismaClientKnownRequestError) return res.sendStatus(409)
     res.sendStatus(500)
   }
 });

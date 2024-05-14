@@ -88,6 +88,73 @@ canvas {
   padding: 0;
 }
 
+
+.auth{
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 300px;
+  height: 300px;
+  background-color: #ffffff;
+  border-radius: 10px;
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+  border: solid 2px rgb(148, 148, 207);
+}
+
+.auth.active{
+  display: flex;
+}
+
+.auth form{
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.auth p{
+  font-size: 14px;
+  text-decoration: underline;
+  margin: 10px 0;
+  cursor: pointer;
+  display: none;
+}
+
+.auth p.active{
+  display: block;
+}
+
+.auth input{
+  width: 100%;
+  height: 30px;
+  border-radius: 5px;
+  border: solid 2px rgb(148, 148, 207);
+  padding: 0 10px;
+  display: none;
+}
+
+.auth input.active{
+  display: block;
+}
+
+.auth #submit-auth{
+  background-color: rgb(148, 148, 207);
+  color: white;
+  cursor: pointer;
+  border: none;
+  border-radius: 5px;
+  padding: 5px 10px;
+  align-self: center;
+}
+
+.auth #button:hover{
+  background-color: rgb(129, 129, 180);
+}
+
 @media screen and (max-width: 1300px) {
   .ui-bar{
     width: 90%;

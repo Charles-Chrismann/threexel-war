@@ -12,6 +12,15 @@
   <body>
     <div id="app">
       <canvas></canvas>
+      <div class="auth">
+        <form>
+          <input class="active" id="username" type="text" name="username" placeholder="Nom d'utilisateur" />
+          <input class="active" id="password" type="password" name="password" placeholder="Mot de passe" />
+          <input type="password" id="confirm-password" name="confirm-password" placeholder="Confirmer le mot de passe">
+          <button id="submit-auth">Connexion</button>
+          <p class="active" id="change-form">S'inscrire</p>
+        </form>
+      </div>
       <div class="ui-bar">
         <div class="ui-disabled">
           <p>Vous devez vous connecter pour jouer !</p>

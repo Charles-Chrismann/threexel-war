@@ -2,9 +2,7 @@ import './style.css'
 import { io } from "socket.io-client";
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/Addons.js';
-import { a } from './hh'
-
-console.log(a)
+import { sub } from 'three/examples/jsm/nodes/Nodes.js';
 
 const socket = io({
   auth: {
@@ -68,7 +66,41 @@ function init() {
   })
 
   if(authorization === '') {
-    document.querySelector('.ui-disabled')?.classList.add('active')
+    document.querySelector('.ui-disabled')?.classList.add('active');
+    document.querySelector('.auth')?.classList.add('active');
+
+    const changeForm = document.querySelector('#change-form') as HTMLButtonElement
+    const confirmPassword = document.querySelector('#confirm-password') as HTMLInputElement
+    const submitButton = document.querySelector('#submit-auth') as HTMLButtonElement
+
+    changeForm.onclick = () => {
+      changeForm.textContent = changeForm.textContent === "S'inscrire" ? "Se connecter" : "S'inscrire";
+      confirmPassword.classList.toggle('active');
+    }
+
+    submitButton.addEventListener('click', (e) => {
+      e.preventDefault();
+      console.log('submit');
+      const username = (document.querySelector('#username') as HTMLInputElement).value
+      const password = (document.querySelector('#password') as HTMLInputElement).value
+      const confirmPassword = (document.querySelector('#confirm-password') as HTMLInputElement).value
+      const action = changeForm.textContent === "Se connecter" ? 'register' : 'login'
+      if(action === 'register' && password !== confirmPassword) {
+        alert('Les mots de passe ne correspondent pas')
+        return
+      }
+
+      fetch("/api/"+action, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ username, password })
+      }).then(res => res.text()).then(res => {
+          localStorage.setItem('authorization', res)
+          location.reload()
+        })
+    })
   }
 
   camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 1, 10000 );
@@ -180,7 +212,7 @@ function onPointerDown( event: MouseEvent) {
         y: voxel.position.y,
         z: voxel.position.z,
         color: colorPicker.value,
-        roomName: "cmwa"
+        roomName: "Tom"
       })
       // scene.add( voxel );
 
