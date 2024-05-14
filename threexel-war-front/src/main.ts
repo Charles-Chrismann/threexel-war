@@ -31,15 +31,28 @@ let isShiftDown = false;
 let rollOverMesh : THREE.Mesh;
 let rollOverMaterial : THREE.MeshBasicMaterial;
 let cubeGeo : THREE.BoxGeometry;
-let cubeMaterial : THREE.MeshLambertMaterial;
 let controls: OrbitControls
 
+const colorsPalette:string[] = ["#000000", "#666666", "#aaaaaa", "#ffffff", "#0050cd", "#26c9ff", "#017420", "#11b03c", "#990000", "#ff0013", "#964112", "#ff7829", "#b0701c", "#99004e", "#ff008f", "#cb5a57", "#feafa8", "#ffc126"]
+
 const objects : THREE.Object3D[] = [];
+const colorPicker = document.querySelector('#color-picker') as HTMLInputElement
 
 init();
 render();
 
 function init() {
+
+  colorsPalette.forEach((color) => {
+    const button = document.createElement('button')
+    button.classList.add('color-button')
+    button.style.backgroundColor = color
+    button.onclick = () => {
+      colorPicker.value = color
+    }
+    document.querySelector('#palette')?.appendChild(button)
+  })
+
 
   camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 1, 10000 );
   camera.position.set( 500, 800, 1300 );
@@ -58,7 +71,6 @@ function init() {
   // cubes
 
   cubeGeo = new THREE.BoxGeometry( 50, 50, 50 );
-  cubeMaterial = new THREE.MeshLambertMaterial( { color: 'red' } );
 
   // grid
   const gridHelper = new THREE.GridHelper( 1000, 20 );
@@ -139,6 +151,8 @@ function onPointerDown( event: MouseEvent) {
       // create cube
 
     } else {
+
+      let cubeMaterial = new THREE.MeshLambertMaterial( { color: colorPicker.value } );
 
       const voxel = new THREE.Mesh( cubeGeo, cubeMaterial );
       voxel.position.copy( intersect.point ).add( intersect.face!.normal );

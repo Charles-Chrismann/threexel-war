@@ -7,3 +7,58 @@
 canvas {
   display: block;
 }
+
+.ui-bar{
+  position: absolute;
+  bottom: 5vh;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 50%;
+  height: 60px;
+  background-color: #ffffff;
+  color: white;
+  border:2px solid rgb(148, 148, 207);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 20px;
+  border-radius: 500px;
+}
+
+.color-button {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  cursor: pointer;
+  border: solid 2px #000;
+}
+
+#palette {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  width: 100%;
+}
+
+#color-picker {
+  -webkit-appearance: none;
+  padding: 0;
+  border: none;
+  border-radius: 5px;
+  width: 60px;
+  height: 30px;
+  cursor: pointer;
+  margin-right: 30px;
+  border: solid 2px #000;
+  background-color: black;
+}
+#color-picker::-webkit-color-swatch {
+  border: none;
+  border-radius: 5px;
+  padding: 0;
+}
+#color-picker::-webkit-color-swatch-wrapper {
+  border: none;
+  border-radius: 5px;
+  padding: 0;
+}
