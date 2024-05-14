@@ -8,6 +8,12 @@ socket.on('message', (msg) => {
   console.log(msg)
 })
 
+socket.emit('join room', "moi", 1)
+
+socket.on('join room', (msg) => {
+  console.log(msg)
+})
+
 fetch('/api').then(res => res.json()).then(res => console.log('lares', res))
 
 
@@ -82,11 +88,11 @@ function init() {
 
   renderer = new THREE.WebGLRenderer( { antialias: true , canvas} );
   renderer.setPixelRatio( window.devicePixelRatio );
-  renderer.setSize( canvas.width, canvas.height );
+  renderer.setSize( window.innerWidth, window.innerHeight );
   controls = new OrbitControls( camera, renderer.domElement );
 
   canvas.addEventListener( 'pointermove', onPointerMove );
-  canvas.addEventListener( 'pointerdown', onPointerDown );
+  canvas.addEventListener( 'pointerup', onPointerDown );
   canvas.addEventListener( 'keydown', onDocumentKeyDown );
   canvas.addEventListener( 'keyup', onDocumentKeyUp );
 
@@ -97,19 +103,16 @@ function init() {
 }
 
 function onWindowResize() {
-  camera.aspect = canvas.width / canvas.height;
+  camera.aspect = window.innerWidth / window.innerHeight;
   camera.updateProjectionMatrix();
-  renderer.setSize( canvas.width, canvas.height );
+  renderer.setSize( window.innerWidth, window.innerHeight );
 }
 
 function onPointerMove( event: MouseEvent) {
-  console.log((event.clientX - (event.target as HTMLElement).offsetLeft) / (event.target as HTMLElement).clientWidth)
-  console.log((event.clientY - (event.target as HTMLElement).offsetTop) / (event.target as HTMLElement).clientHeight)
   const x = (event.clientX - (event.target as HTMLElement).offsetLeft) / (event.target as HTMLElement).clientWidth
   const y = (event.clientY - (event.target as HTMLElement).offsetTop) / (event.target as HTMLElement).clientHeight
   // pointer.set( ( event.clientX / window.innerWidth ) * 2 - 1, - ( event.clientY / window.innerHeight ) * 2 + 1 );
   pointer.set( x * 2 - 1, - y * 2 + 1 );
-  console.log(event.clientX, event.clientY, pointer.x, pointer.y)
   raycaster.setFromCamera( pointer, camera );
   const intersects = raycaster.intersectObjects( objects, false );
   if ( intersects.length > 0 ) {
