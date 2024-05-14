@@ -44,7 +44,8 @@ app.post("/api/register", async (req: Request, res: Response) => {
         }
       }
     })
-    res.send(user);
+    const token = sign({ id: user.id, username: user.username }, process.env.JWT_SECRET!)
+    res.send(token)
   } catch (e: any) {
     if(e instanceof PrismaClientKnownRequestError) return res.sendStatus(409)
     res.sendStatus(500)
@@ -63,6 +64,24 @@ app.post('/api/login', async (req: Request, res: Response) => {
   if(!await compare(password, user.password)) return res.sendStatus(401)
   const token = sign({ id: user.id, username: user.username }, process.env.JWT_SECRET!)
   res.send(token)
+})
+
+app.get('/api/map/:roomName', async (req: Request, res: Response) => {
+  try {
+    const map = await prisma.map.findFirst({
+      where: {
+        user: {
+          username: req.params.roomName
+        }
+      },
+      include: {
+        voxels: true
+      }
+    })
+    res.send(map?.voxels)
+  } catch (error) {
+    res.sendStatus(404)
+  }
 })
 
 io.use((socket, next) => {
@@ -114,6 +133,7 @@ io.on('connection', (socket) => {
         }
       })
       if(!map) return
+      console.log('eee')
       const createdVoxel = await tx.voxel.create({
         data: {
           x: voxel.x,
