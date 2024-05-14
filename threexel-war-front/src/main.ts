@@ -143,6 +143,7 @@ function onPointerDown( event: MouseEvent) {
       const voxel = new THREE.Mesh( cubeGeo, cubeMaterial );
       voxel.position.copy( intersect.point ).add( intersect.face!.normal );
       voxel.position.divideScalar( 50 ).floor().multiplyScalar( 50 ).addScalar( 25 );
+      console.log(voxel.position)
       scene.add( voxel );
 
       objects.push( voxel );
