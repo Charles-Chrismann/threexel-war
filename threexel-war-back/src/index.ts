@@ -73,7 +73,11 @@ app.get('/api/map/:roomName', async (req: Request, res: Response) => {
         }
       },
       include: {
-        voxels: true
+        voxels: {
+          where: {
+            isVisible: true
+          }
+        }
       }
     })
     res.send(map?.voxels)
@@ -137,6 +141,7 @@ io.on('connection', (socket) => {
           x: voxel.x,
           y: voxel.y,
           z: voxel.z,
+          isVisible: true,
           color: voxel.color,
           mapId: map.id,
           userId: socket.user.id
@@ -158,6 +163,33 @@ io.on('connection', (socket) => {
     if(!txResult) return
     console.log(txResult)
     io.emit('update voxel', txResult)
+  })
+
+
+  socket.on('delete', async (voxel: { x: number, y: number, z: number, roomName: string }) => {
+    if(!socket.user) return
+    const map = await prisma.map.findFirst({
+      where: {
+        user: {
+
+          username: voxel.roomName
+        }
+      }
+    })
+    if(!map) return
+    const deletedVoxel = await prisma.voxel.updateMany({
+      where: {
+        x: voxel.x,
+        y: voxel.y,
+        z: voxel.z,
+        mapId: map.id
+      },
+      data: {
+        isVisible: false,
+        updatedAt: new Date()
+      }
+    })
+    io.emit('delete voxel', deletedVoxel)
   })
 })
 

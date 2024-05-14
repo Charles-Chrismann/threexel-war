@@ -44,6 +44,7 @@ model Voxel {
   y     Int
   z     Int
   color String
+  isVisible Boolean
 
   map   Map @relation(fields: [mapId], references: [id])
   mapId Int

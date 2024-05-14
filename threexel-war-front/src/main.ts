@@ -38,6 +38,7 @@ let plane : THREE.Mesh;
 let pointer : THREE.Vector2;
 let raycaster : THREE.Raycaster;
 let isShiftDown = false;
+let isRDown = false;
 
 let rollOverMesh : THREE.Mesh;
 let rollOverMaterial : THREE.MeshBasicMaterial;
@@ -182,6 +183,7 @@ function onPointerMove( event: MouseEvent) {
   const x = (event.clientX - (event.target as HTMLElement).offsetLeft) / (event.target as HTMLElement).clientWidth
   const y = (event.clientY - (event.target as HTMLElement).offsetTop) / (event.target as HTMLElement).clientHeight
   // pointer.set( ( event.clientX / window.innerWidth ) * 2 - 1, - ( event.clientY / window.innerHeight ) * 2 + 1 );
+
   pointer.set( x * 2 - 1, - y * 2 + 1 );
   raycaster.setFromCamera( pointer, camera );
   const intersects = raycaster.intersectObjects( objects, false );
@@ -211,12 +213,40 @@ function onPointerDown( event: MouseEvent) {
           roomName: "Tom"
         })
       }
+      
+    }// Replace cube
+    else if (isRDown) {
+      if ( intersect.object !== plane ) {
+        //delete current cube
+        scene.remove( intersect.object );
+        objects.splice( objects.indexOf( intersect.object ), 1 );
+        socket.emit('delete', {
+          x: intersect.object.position.x,
+          y: intersect.object.position.y,
+          z: intersect.object.position.z,
+          roomName: "Tom"
+        })
 
-      // create cube
+        // create new cube
+        setVoxel({
+          x: intersect.object.position.x,
+          y: intersect.object.position.y,
+          z: intersect.object.position.z,
+          color: colorPicker.value
+        })
+        socket.emit('place', { 
+          x: intersect.object.position.x,
+          y: intersect.object.position.y,
+          z: intersect.object.position.z,
+          color: colorPicker.value,
+          roomName: "Tom"
+        })
+      }
+    }
+    // create cube
+    else {
 
-    } else {
-
-      let cubeMaterial = new THREE.MeshLambertMaterial( { color: colorPicker.value } );
+      let cubeMaterial = new THREE.MeshBasicMaterial( { color: colorPicker.value } );
 
       const voxel = new THREE.Mesh( cubeGeo, cubeMaterial );
       voxel.position.copy( intersect.point ).add( intersect.face!.normal );
@@ -240,12 +270,14 @@ function onPointerDown( event: MouseEvent) {
 function onDocumentKeyDown( event: KeyboardEvent) {
   switch ( event.key ) {
     case 'Shift': isShiftDown = true; break;
+    case 'r': isRDown = true; break;
   }
 }
 
 function onDocumentKeyUp( event: KeyboardEvent ) {
   switch ( event.key ) {
     case 'Shift': isShiftDown = false; break;
+    case 'r': isRDown = false; break;
   }
 }
 
@@ -256,7 +288,7 @@ function render() {
 }
 
 function setVoxel(voxelData: any) {
-  let cubeMaterial = new THREE.MeshLambertMaterial( { color: voxelData.color } );
+  let cubeMaterial = new THREE.MeshBasicMaterial( { color: voxelData.color } );
 
   const voxel = new THREE.Mesh( cubeGeo, cubeMaterial );
   voxel.position.set(voxelData.x, voxelData.y, voxelData.z)
