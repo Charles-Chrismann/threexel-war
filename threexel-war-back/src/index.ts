@@ -114,7 +114,7 @@ io.on('connection', (socket) => {
         }
       })
       if(!map) return
-      const createdVoxel = tx.voxel.create({
+      const createdVoxel = await tx.voxel.create({
         data: {
           x: voxel.x,
           y: voxel.y,
@@ -124,22 +124,22 @@ io.on('connection', (socket) => {
           userId: socket.user.id
         }
       })
-      tx.userOnMap.update({
-        where: {
-          mapId_userId: {
-            mapId: map.id,
-            userId: socket.user.id
-          }
-        },
-        data: {
-          lastPlaced: new Date()
-        }
-      })
-      return true
+      // await tx.userOnMap.update({
+      //   where: {
+      //     mapId_userId: {
+      //       mapId: map.id,
+      //       userId: socket.user.id
+      //     }
+      //   },
+      //   data: {
+      //     lastPlaced: new Date()
+      //   }
+      // })
+      return createdVoxel
     })
     if(!txResult) return
-    console.log(voxel)
-    io.emit('update voxel', voxel)
+    console.log(txResult)
+    io.emit('update voxel', txResult)
   })
 })
 
