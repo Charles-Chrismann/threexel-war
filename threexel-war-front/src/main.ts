@@ -2,8 +2,15 @@ import './style.css'
 import { io } from "socket.io-client";
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/Addons.js';
+import { a } from './hh'
 
-const socket = io()
+console.log(a)
+
+const socket = io({
+  auth: {
+    token: localStorage.getItem('authorization')
+  }
+})
 socket.on('message', (msg) => {
   console.log(msg)
 })
@@ -12,6 +19,11 @@ socket.emit('join room', "moi", 1)
 
 socket.on('join room', (msg) => {
   console.log(msg)
+})
+
+socket.on('update voxel', (voxel) => {
+  console.log(voxel)
+  setVoxel(voxel)
 })
 
 fetch('/api').then(res => res.json()).then(res => console.log('lares', res))
@@ -163,9 +175,16 @@ function onPointerDown( event: MouseEvent) {
       voxel.position.copy( intersect.point ).add( intersect.face!.normal );
       voxel.position.divideScalar( 50 ).floor().multiplyScalar( 50 ).addScalar( 25 );
       console.log(voxel.position)
-      scene.add( voxel );
+      socket.emit('place', { 
+        x: voxel.position.x,
+        y: voxel.position.y,
+        z: voxel.position.z,
+        color: colorPicker.value,
+        roomName: "cmwa"
+      })
+      // scene.add( voxel );
 
-      objects.push( voxel );
+      // objects.push( voxel );
 
     }
   }
@@ -187,4 +206,16 @@ function render() {
   requestAnimationFrame(render)
   controls.update();
   renderer.render( scene, camera );
+}
+
+function setVoxel(voxelData: any) {
+  let cubeMaterial = new THREE.MeshLambertMaterial( { color: voxelData.color } );
+
+  const voxel = new THREE.Mesh( cubeGeo, cubeMaterial );
+  voxel.position.set(voxelData.x, voxelData.y, voxelData.z)
+  // voxel.position.copy( intersect.point ).add( intersect.face!.normal );
+  // voxel.position.divideScalar( 50 ).floor().multiplyScalar( 50 ).addScalar( 25 );
+  
+  scene.add( voxel );
+  objects.push( voxel );
 }
