@@ -1,0 +1,63 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  username String @unique
+  password String
+
+  map       Map?
+  voxels    Voxel[]
+  UserOnMap UserOnMap[]
+}
+
+model Map {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user   User @relation(fields: [userId], references: [id])
+  userId Int  @unique
+
+  voxels    Voxel[]
+  UserOnMap UserOnMap[]
+}
+
+model Voxel {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  x Int
+  y Int
+  z Int
+  color String
+
+  map   Map @relation(fields: [mapId], references: [id])
+  mapId Int
+
+  user   User @relation(fields: [userId], references: [id])
+  userId Int
+}
+
+model UserOnMap {
+  map   Map @relation(fields: [mapId], references: [id])
+  mapId Int
+
+  user   User @relation(fields: [userId], references: [id])
+  userId Int
+
+  @@id([mapId, userId])
+}
