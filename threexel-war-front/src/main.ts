@@ -23,7 +23,7 @@ socket.on('update voxel', (voxel) => {
   setVoxel(voxel)
 })
 
-fetch('/api/map/cmwa').then(res => res.json()).then((res: any) => {
+fetch('/api/map/Tom').then(res => res.json()).then((res: any) => {
   res.forEach((voxel: any) => setVoxel(voxel))
 })
 
@@ -81,7 +81,6 @@ function init() {
 
     submitButton.addEventListener('click', (e) => {
       e.preventDefault();
-      console.log('submit');
       const username = (document.querySelector('#username') as HTMLInputElement).value
       const password = (document.querySelector('#password') as HTMLInputElement).value
       const confirmPassword = (document.querySelector('#confirm-password') as HTMLInputElement).value
@@ -118,7 +117,10 @@ function init() {
   // roll-over helpers
 
   const rollOverGeo = new THREE.BoxGeometry( 50, 50, 50 );
-  rollOverMaterial = new THREE.MeshBasicMaterial( { color: 0xff0000, opacity: 0.5, transparent: true } );
+
+  const pointerOpacity = authorization !== '' ? 0.5 : 0
+
+  rollOverMaterial = new THREE.MeshBasicMaterial( { color: 0xff0000, opacity: pointerOpacity, transparent: true } );
   rollOverMesh = new THREE.Mesh( rollOverGeo, rollOverMaterial );
   scene.add( rollOverMesh );
 
@@ -157,11 +159,13 @@ function init() {
   renderer.setSize( window.innerWidth, window.innerHeight );
   controls = new OrbitControls( camera, renderer.domElement );
 
-  canvas.addEventListener( 'pointermove', onPointerMove );
-  canvas.addEventListener( 'pointerup', onPointerDown );
-  canvas.addEventListener( 'keydown', onDocumentKeyDown );
-  canvas.addEventListener( 'keyup', onDocumentKeyUp );
-
+  if(authorization !== '') {
+    canvas.addEventListener( 'pointermove', onPointerMove );
+    canvas.addEventListener( 'pointerup', onPointerDown );
+    window.addEventListener( 'keydown', onDocumentKeyDown );
+    window.addEventListener( 'keyup', onDocumentKeyUp );
+  }
+  
   //
 
   window.addEventListener( 'resize', onWindowResize );
@@ -200,6 +204,12 @@ function onPointerDown( event: MouseEvent) {
       if ( intersect.object !== plane ) {
         scene.remove( intersect.object );
         objects.splice( objects.indexOf( intersect.object ), 1 );
+        socket.emit('delete', {
+          x: intersect.object.position.x,
+          y: intersect.object.position.y,
+          z: intersect.object.position.z,
+          roomName: "Tom"
+        })
       }
 
       // create cube
@@ -217,7 +227,7 @@ function onPointerDown( event: MouseEvent) {
         y: voxel.position.y,
         z: voxel.position.z,
         color: colorPicker.value,
-        roomName: "cmwa"
+        roomName: "Tom"
       })
       // scene.add( voxel );
 

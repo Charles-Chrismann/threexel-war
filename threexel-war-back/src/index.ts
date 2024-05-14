@@ -45,7 +45,7 @@ app.post("/api/register", async (req: Request, res: Response) => {
       }
     })
     const token = sign({ id: user.id, username: user.username }, process.env.JWT_SECRET!)
-    res.send(token)
+    res.status(200).send({'status': '200', 'message': 'success', 'token':token})
   } catch (e: any) {
     if(e instanceof PrismaClientKnownRequestError) return res.sendStatus(409)
     res.sendStatus(500)
