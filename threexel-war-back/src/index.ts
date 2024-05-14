@@ -167,30 +167,47 @@ io.on('connection', (socket) => {
 
 
   socket.on('delete', async (voxel: { x: number, y: number, z: number, roomName: string }) => {
-    if(!socket.user) return
-    const map = await prisma.map.findFirst({
-      where: {
-        user: {
-
-          username: voxel.roomName
+    if (!socket.user) return;
+  
+    try {
+      const map = await prisma.map.findFirst({
+        where: {
+          user: {
+            username: voxel.roomName
+          }
         }
-      }
-    })
-    if(!map) return
-    const deletedVoxel = await prisma.voxel.updateMany({
-      where: {
-        x: voxel.x,
-        y: voxel.y,
-        z: voxel.z,
-        mapId: map.id
-      },
-      data: {
-        isVisible: false,
-        updatedAt: new Date()
-      }
-    })
-    io.emit('delete voxel', deletedVoxel)
-  })
+      });
+  
+      if (!map) return;
+  
+      const voxelToDelete = await prisma.voxel.findFirst({
+        where: {
+          x: voxel.x,
+          y: voxel.y,
+          z: voxel.z,
+          mapId: map.id,
+          isVisible: true
+        }
+      });
+  
+      if (!voxelToDelete) return;
+  
+      const deletedVoxel = await prisma.voxel.update({
+        where: {
+          id: voxelToDelete.id
+        },
+        data: {
+          isVisible: false,
+          updatedAt: new Date()
+        }
+      });
+  
+      io.emit('delete voxel', deletedVoxel);
+    } catch (error) {
+      console.error("Error deleting voxel:", error);
+    }
+  });
+  
 })
 
 server.listen(PORT, () => { 

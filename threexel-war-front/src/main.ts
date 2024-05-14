@@ -23,6 +23,13 @@ socket.on('update voxel', (voxel) => {
   setVoxel(voxel)
 })
 
+socket.on('delete voxel', (voxel) => {
+  const voxelToDelete = objects.find((object) => object.position.x === voxel.x && object.position.y === voxel.y && object.position.z === voxel.z)
+  if(!voxelToDelete) return
+  scene.remove(voxelToDelete)
+  objects.splice(objects.indexOf(voxelToDelete), 1)
+})
+
 fetch('/api/map/Tom').then(res => res.json()).then((res: any) => {
   res.forEach((voxel: any) => setVoxel(voxel))
 })
