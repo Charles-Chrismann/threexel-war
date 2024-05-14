@@ -2,14 +2,39 @@
   margin: 0;
   padding: 0;
   box-sizing: border-box;
+  font-family: "Roboto", sans-serif;
 }
 
 canvas {
   display: block;
 }
 
-.ui-bar{
+.ui-disabled.active{
+  display: flex;
+}
+
+.ui-disabled{
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.6);
   position: absolute;
+  left: 0;
+  border-radius: 500px;
+  display: none;
+  justify-content: center;
+  align-items: center;
+}
+
+.ui-disabled p{
+  color: black;
+  background-color: white;
+  border-radius: 5px;
+  padding: 8px 16px;
+  font-size: 20px;
+}
+
+.ui-bar{
+  position: fixed;
   bottom: 5vh;
   left: 50%;
   transform: translateX(-50%);
@@ -61,4 +86,11 @@ canvas {
   border: none;
   border-radius: 5px;
   padding: 0;
+}
+
+@media screen and (max-width: 1300px) {
+  .ui-bar{
+    width: 90%;
+  }
+  
 }

@@ -38,6 +38,8 @@ const colorsPalette:string[] = ["#000000", "#666666", "#aaaaaa", "#ffffff", "#00
 const objects : THREE.Object3D[] = [];
 const colorPicker = document.querySelector('#color-picker') as HTMLInputElement
 
+const authorization : string = localStorage.getItem('authorization') || ''
+
 init();
 render();
 
@@ -53,6 +55,9 @@ function init() {
     document.querySelector('#palette')?.appendChild(button)
   })
 
+  if(authorization === '') {
+    document.querySelector('.ui-disabled')?.classList.add('active')
+  }
 
   camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 1, 10000 );
   camera.position.set( 500, 800, 1300 );
