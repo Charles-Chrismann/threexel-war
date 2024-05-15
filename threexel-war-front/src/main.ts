@@ -1,27 +1,35 @@
 import './style.css'
-import { io } from "socket.io-client";
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/Addons.js';
+import {socket, reloadSocket} from './socket';
+import { getAllMaps } from './utils';
+import { Map } from './types';
+import { MicroScene } from './MicroScene';
 
-const socket = io({
-  auth: {
-    token: localStorage.getItem('authorization')
-  }
-})
-socket.on('message', (msg) => {
-  console.log(msg)
-})
+let roomName = localStorage.getItem('room')
 
-socket.emit('join room', "moi", 1)
+function setSocket() {
+  socket.on('message', (msg) => {
+    console.log(msg)
+  })
+  
+  socket.emit('join room', "moi", 1)
+  
+  socket.on('join room', (msg) => {
+    console.log(msg)
+  })
+  
+  socket.on('update voxel', (voxel) => {
+    console.log(voxel)
+    setVoxel(voxel)
+  })
 
-socket.on('join room', (msg) => {
-  console.log(msg)
-})
+  socket.on('connect', () => {
+    socket.emit('identification', localStorage.getItem('authorization'))
+  });
+}
 
-socket.on('update voxel', (voxel) => {
-  console.log(voxel)
-  setVoxel(voxel)
-})
+setSocket()
 
 socket.on('delete voxel', (voxel) => {
   const voxelToDelete = objects.find((object) => object.position.x === voxel.x && object.position.y === voxel.y && object.position.z === voxel.z)
@@ -30,12 +38,9 @@ socket.on('delete voxel', (voxel) => {
   objects.splice(objects.indexOf(voxelToDelete), 1)
 })
 
-fetch('/api/map/Tom').then(res => res.json()).then((res: any) => {
+fetch('/api/maps/' + roomName).then(res => res.json()).then((res: any) => {
   res.forEach((voxel: any) => setVoxel(voxel))
 })
-
-
-// let camera, scene, renderer;
 
 let camera: THREE.PerspectiveCamera;
 let scene: THREE.Scene;
@@ -54,66 +59,90 @@ let controls: OrbitControls
 
 const colorsPalette:string[] = ["#000000", "#666666", "#aaaaaa", "#ffffff", "#0050cd", "#26c9ff", "#017420", "#11b03c", "#990000", "#ff0013", "#964112", "#ff7829", "#b0701c", "#99004e", "#ff008f", "#cb5a57", "#feafa8", "#ffc126"]
 
-const objects : THREE.Object3D[] = [];
+let objects : THREE.Object3D[] = [];
 const colorPicker = document.querySelector('#color-picker') as HTMLInputElement
 
-const authorization : string = localStorage.getItem('authorization') || ''
+const mapsTab = document.querySelector('#maps')! as HTMLDivElement
+let maps : Map[] = []
+
+const authorization = localStorage.getItem('authorization')
+const pointerOpacity = authorization ? 0.5 : 0
+
+colorsPalette.forEach((color) => {
+  const button = document.createElement('button')
+  button.classList.add('color-button')
+  button.style.backgroundColor = color
+  button.onclick = () => {
+    colorPicker.value = color
+  }
+  document.querySelector('#palette')?.appendChild(button)
+})
+
+if(!authorization) {
+  document.querySelector('.ui-disabled')?.classList.add('active');
+  document.querySelector('.auth')?.classList.add('active');
+  (document.querySelector('.auth')! as HTMLElement).style.display = 'block'
+
+  const changeForm = document.querySelector('#change-form') as HTMLButtonElement
+  const confirmPassword = document.querySelector('#confirm-password') as HTMLInputElement
+  const submitButton = document.querySelector('#submit-auth') as HTMLButtonElement
+
+  changeForm.onclick = () => {
+    changeForm.textContent = changeForm.textContent === "S'inscrire" ? "Se connecter" : "S'inscrire";
+    confirmPassword.classList.toggle('active');
+  }
+
+  submitButton.addEventListener('click', async (e) => {
+    e.preventDefault();
+    const username = (document.querySelector('#username') as HTMLInputElement).value
+    const password = (document.querySelector('#password') as HTMLInputElement).value
+    const confirmPassword = (document.querySelector('#confirm-password') as HTMLInputElement).value
+    const action = changeForm.textContent === "Se connecter" ? 'register' : 'login'
+    if(action === 'register' && password !== confirmPassword) {
+      alert('Les mots de passe ne correspondent pas')
+      return
+    }
+
+    const resLoging = await fetch("/api/"+action, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ username, password })
+    })
+    const res = await resLoging.json()
+    if(res.status !== '200') {
+      alert(res.message);
+      return
+    }
+    localStorage.setItem('authorization', res.token)
+    setControls();
+    (document.querySelector('.auth')! as HTMLElement).style.display = 'none'
+    if(!localStorage.getItem('room')) localStorage.setItem('room', username)
+    roomName = username
+    inputEl.value = username
+    document.querySelector('.ui-disabled')?.classList.remove('active');
+    await loadAndResetScene()
+    rollOverMaterial.opacity = 0.5
+    reloadSocket()
+    setSocket()
+  })
+}
+
+if(authorization) setControls()
+
+function setControls() {
+  canvas.addEventListener( 'pointermove', onPointerMove );
+  canvas.addEventListener( 'pointerup', onPointerDown );
+  window.addEventListener( 'keydown', onDocumentKeyDown );
+  window.addEventListener( 'keyup', onDocumentKeyUp );
+}
 
 init();
 render();
 
 function init() {
-
-  colorsPalette.forEach((color) => {
-    const button = document.createElement('button')
-    button.classList.add('color-button')
-    button.style.backgroundColor = color
-    button.onclick = () => {
-      colorPicker.value = color
-    }
-    document.querySelector('#palette')?.appendChild(button)
-  })
-
-  if(authorization === '') {
-    document.querySelector('.ui-disabled')?.classList.add('active');
-    document.querySelector('.auth')?.classList.add('active');
-
-    const changeForm = document.querySelector('#change-form') as HTMLButtonElement
-    const confirmPassword = document.querySelector('#confirm-password') as HTMLInputElement
-    const submitButton = document.querySelector('#submit-auth') as HTMLButtonElement
-
-    changeForm.onclick = () => {
-      changeForm.textContent = changeForm.textContent === "S'inscrire" ? "Se connecter" : "S'inscrire";
-      confirmPassword.classList.toggle('active');
-    }
-
-    submitButton.addEventListener('click', (e) => {
-      e.preventDefault();
-      const username = (document.querySelector('#username') as HTMLInputElement).value
-      const password = (document.querySelector('#password') as HTMLInputElement).value
-      const confirmPassword = (document.querySelector('#confirm-password') as HTMLInputElement).value
-      const action = changeForm.textContent === "Se connecter" ? 'register' : 'login'
-      if(action === 'register' && password !== confirmPassword) {
-        alert('Les mots de passe ne correspondent pas')
-        return
-      }
-
-      fetch("/api/"+action, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ username, password })
-      }).then(res => res.json()).then(res => {
-          if(res.status !== '200') {
-            alert(res.message);
-            return
-          }
-          localStorage.setItem('authorization', res.token)
-          location.reload()
-        })
-    })
-  }
+  objects = []
 
   camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 1, 10000 );
   camera.position.set( 500, 800, 1300 );
@@ -125,8 +154,6 @@ function init() {
   // roll-over helpers
 
   const rollOverGeo = new THREE.BoxGeometry( 50, 50, 50 );
-
-  const pointerOpacity = authorization !== '' ? 0.5 : 0
 
   rollOverMaterial = new THREE.MeshBasicMaterial( { color: 0xff0000, opacity: pointerOpacity, transparent: true } );
   rollOverMesh = new THREE.Mesh( rollOverGeo, rollOverMaterial );
@@ -166,13 +193,6 @@ function init() {
   renderer.setPixelRatio( window.devicePixelRatio );
   renderer.setSize( window.innerWidth, window.innerHeight );
   controls = new OrbitControls( camera, renderer.domElement );
-
-  if(authorization !== '') {
-    canvas.addEventListener( 'pointermove', onPointerMove );
-    canvas.addEventListener( 'pointerup', onPointerDown );
-    window.addEventListener( 'keydown', onDocumentKeyDown );
-    window.addEventListener( 'keyup', onDocumentKeyUp );
-  }
   
   //
 
@@ -217,7 +237,7 @@ function onPointerDown( event: MouseEvent) {
           x: intersect.object.position.x,
           y: intersect.object.position.y,
           z: intersect.object.position.z,
-          roomName: "Tom"
+          roomName
         })
       }
       
@@ -231,7 +251,7 @@ function onPointerDown( event: MouseEvent) {
           x: intersect.object.position.x,
           y: intersect.object.position.y,
           z: intersect.object.position.z,
-          roomName: "Tom"
+          roomName
         })
 
         // create new cube
@@ -246,7 +266,7 @@ function onPointerDown( event: MouseEvent) {
           y: intersect.object.position.y,
           z: intersect.object.position.z,
           color: colorPicker.value,
-          roomName: "Tom"
+          roomName
         })
       }
     }
@@ -264,7 +284,7 @@ function onPointerDown( event: MouseEvent) {
         y: voxel.position.y,
         z: voxel.position.z,
         color: colorPicker.value,
-        roomName: "Tom"
+        roomName
       })
       // scene.add( voxel );
 
@@ -278,6 +298,7 @@ function onDocumentKeyDown( event: KeyboardEvent) {
   switch ( event.key ) {
     case 'Shift': isShiftDown = true; break;
     case 'r': isRDown = true; break;
+    case 'Tab': toggleMapsTab(); break;
   }
 }
 
@@ -304,4 +325,45 @@ function setVoxel(voxelData: any) {
   
   scene.add( voxel );
   objects.push( voxel );
+}
+
+const inputEl = document.querySelector('.ui-room input')! as HTMLInputElement
+inputEl.value = localStorage.getItem('room') ?? ''
+document.querySelector('#switch-room')!.addEventListener('click', async () => {
+  if(inputEl.value === '') return
+  localStorage.setItem('room', inputEl.value)
+  roomName = inputEl.value
+
+  loadAndResetScene()
+})
+
+async function loadAndResetScene() {
+  const res = await fetch('/api/maps/' + roomName)
+  const voxels = await res.json()
+  init()
+  voxels.forEach((voxel: any) => setVoxel(voxel))
+}
+
+async function toggleMapsTab() {
+  if(mapsTab.style.display === 'grid') {
+    mapsTab.style.display = 'none'
+    return
+  } else {
+    mapsTab.style.display = 'grid'
+  }
+  if(!maps.length) {
+    maps = await getAllMaps()
+    mapsTab.style.display = 'grid'
+    maps.forEach(map => {
+      const micro = new MicroScene(mapsTab, map)
+      micro.renderer.domElement.addEventListener('click', () => {
+        mapsTab.style.display = 'none'  
+        localStorage.setItem('room', map.user.username)
+        roomName = map.user.username 
+        inputEl.value = map.user.username 
+
+        loadAndResetScene()
+      })
+    })
+  }
 }

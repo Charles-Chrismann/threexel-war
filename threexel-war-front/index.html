@@ -12,7 +12,7 @@
   <body>
     <div id="app">
       <canvas></canvas>
-      <div class="auth">
+      <div class="auth" style="display: none;">
         <form>
           <input class="active" id="username" type="text" name="username" placeholder="Nom d'utilisateur" />
           <input class="active" id="password" type="password" name="password" placeholder="Mot de passe" />
@@ -28,6 +28,11 @@
         <input type="color" id="color-picker" />
         <div id="palette"></div>
       </div>
+      <div class="ui-room">
+        <input type="text">
+        <button id="switch-room">Go</button>
+      </div>
+      <div id="maps" style="display: none;"></div>
     </div>
     <script type="module" src="/src/main.ts"></script>
   </body>

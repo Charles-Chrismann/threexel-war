@@ -6,6 +6,8 @@ import { Server, Socket } from 'socket.io'
 import { compare, hash } from 'bcrypt'
 import { sign, verify } from 'jsonwebtoken'
 import { PrismaClientKnownRequestError, PrismaClientValidationError } from "@prisma/client/runtime/library";
+import appRouter from './app.route'
+import prisma from './PrismaClient'
 
 declare module 'socket.io' {
   export interface Socket {
@@ -16,7 +18,7 @@ declare module 'socket.io' {
   }
 }
 
-const prisma = new PrismaClient()
+
 
 // configures dotenv to work in your application
 const app = express();
@@ -27,80 +29,22 @@ const PORT = 3000;
 
 app.use(express.json())
 app.use(express.static('../threexel-war-front/dist'));
-app.get("/api/", (request: Request, response: Response) => { 
-  response.status(200).send("Hello World");
-});
 
-app.post("/api/register", async (req: Request, res: Response) => {
-  try {
-    const { username, password } = req.body
-    const passwordHash = await hash(password, 10)
-    const user = await prisma.user.create({
-      data: {
-        username,
-        password: passwordHash,
-        map: {
-          create: {}
-        }
-      }
-    })
-    const token = sign({ id: user.id, username: user.username }, process.env.JWT_SECRET!)
-    res.status(200).send({'status': '200', 'message': 'success', 'token':token})
-  } catch (e: any) {
-    if(e instanceof PrismaClientKnownRequestError) return res.sendStatus(409)
-    res.sendStatus(500)
-  }
-});
-
-app.post('/api/login', async (req: Request, res: Response) => {
-  const { username, password } = req.body
-  const user = await prisma.user.findUnique({
-    where: {
-      username
-    }
-  })
-  if(!user || !await compare(password, user.password)) return res.status(401).send({'status': '401', 'message': 'Mauvais identifiants'})
-  const token = sign({ id: user.id, username: user.username }, process.env.JWT_SECRET!)
-  res.status(200).send({'status': '200', 'message': 'success', 'token':token})
-})
-
-app.get('/api/map/:roomName', async (req: Request, res: Response) => {
-  try {
-    const map = await prisma.map.findFirst({
-      where: {
-        user: {
-          username: req.params.roomName
-        }
-      },
-      include: {
-        voxels: {
-          where: {
-            isVisible: true
-          }
-        }
-      }
-    })
-    res.send(map?.voxels)
-  } catch (error) {
-    res.sendStatus(404)
-  }
-})
-
-io.use((socket, next) => {
-  const token = socket.handshake.auth.token
-  if(!token) return next()
-    try {
-      const payload = verify(token, process.env.JWT_SECRET!) as { id: number, username: string }
-      socket.user = payload
-      next();
-    } catch (error: unknown) {
-      
-    }
-});
+app.use('/api', appRouter)
 
 io.on('connection', (socket) => {
   console.log('user connecyted', socket.handshake.auth.token)
   socket.emit('message', {hello: "les jeunes"})
+
+  socket.on('identification', (token) => {
+    if(!token) return
+    try {
+      const payload = verify(token, process.env.JWT_SECRET!) as { id: number, username: string }
+      socket.user = payload
+    } catch (error: unknown) {
+      
+    }
+  })
 
   socket.on('join room', async (roomId: string, userId: number) => {
     socket.rooms.forEach(room => {if (room !== socket.id) {socket.leave(room);}});
@@ -125,7 +69,7 @@ io.on('connection', (socket) => {
   })
 
   socket.on('place', async (voxel: { x: number, y: number, z: number, color: string, roomName: string }) => {
-    if(!socket.user) return
+    if(!socket.user || !voxel.roomName) return
     const txResult = await prisma.$transaction(async (tx) => {
       const map = await tx.map.findFirst({
         where: {

@@ -5,6 +5,40 @@
   font-family: "Roboto", sans-serif;
 }
 
+#app {
+  position: relative;
+}
+
+#app .ui-room {
+  display: flex;
+  gap: 0.5rem;
+  position: absolute;
+  top: 2rem;
+  right: 2rem;
+  background-color: white;
+  border: solid #16a394;
+  border-radius: 1.5rem;
+  padding: 1rem;
+}
+
+#app .ui-room input {
+  padding: 0.5rem;
+  border: solid 1px #e2e8f0;
+  border-radius: 0.5rem;
+}
+
+#app .ui-room button {
+  padding: 0.5rem;
+  background-color: #16a394;
+  color: white;
+  border: none;
+  border-radius: 0.5rem;
+}
+
+#app .ui-room button:active {
+  background-color: #128176;
+}
+
 canvas {
   display: block;
 }
@@ -160,4 +194,22 @@ canvas {
     width: 90%;
   }
   
+}
+
+#app #maps {
+  position: absolute;
+  inset: 2rem;
+  background-color: white;
+  border: solid 2px #16a394;
+  border-radius: 1.5rem;
+  overflow: hidden;
+  padding: 1rem;
+  gap: 1rem;
+
+  grid-template-columns: repeat(auto-fill, 300px);
+}
+
+#app #maps canvas {
+  cursor: pointer;
+  display: block;
 }
