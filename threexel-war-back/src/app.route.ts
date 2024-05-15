@@ -47,7 +47,11 @@ router.get('/maps/', async (req: Request, res: Response) => {
   try {
     const maps = await prisma.map.findMany({
       include: {
-        voxels: true,
+        voxels: {
+          where: {
+            isVisible: true
+          }
+        },
         user: {
           select: {
             id: true,

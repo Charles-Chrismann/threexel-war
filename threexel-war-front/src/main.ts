@@ -13,10 +13,8 @@ function setSocket() {
     console.log(msg)
   })
   
-  socket.emit('join room', "moi", 1)
-  
   socket.on('join room', (msg) => {
-    console.log(msg)
+    console.log('joining room', msg)
   })
   
   socket.on('update voxel', (voxel) => {
@@ -26,6 +24,7 @@ function setSocket() {
 
   socket.on('connect', () => {
     socket.emit('identification', localStorage.getItem('authorization'))
+    if(roomName) socket.emit('join room', roomName)
   });
 }
 
@@ -361,6 +360,7 @@ async function toggleMapsTab() {
         localStorage.setItem('room', map.user.username)
         roomName = map.user.username 
         inputEl.value = map.user.username 
+        socket.emit('join room', map.user.username)
 
         loadAndResetScene()
       })

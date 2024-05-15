@@ -46,7 +46,7 @@ io.on('connection', (socket) => {
     }
   })
 
-  socket.on('join room', async (roomId: string, userId: number) => {
+  socket.on('join room', async (roomId: string) => {
     socket.rooms.forEach(room => {if (room !== socket.id) {socket.leave(room);}});
     socket.join(roomId)
     const roomData = await prisma.map.findFirst({
@@ -60,7 +60,9 @@ io.on('connection', (socket) => {
         voxels: true,
         UserOnMap: {
           where: {
-            userId
+            user: {
+              username: roomId
+            }
           }
         }
       }
@@ -106,7 +108,7 @@ io.on('connection', (socket) => {
     })
     if(!txResult) return
     console.log(txResult)
-    io.emit('update voxel', txResult)
+    io.to(voxel.roomName).emit('update voxel', txResult)
   })
 
 
@@ -146,7 +148,7 @@ io.on('connection', (socket) => {
         }
       });
   
-      io.emit('delete voxel', deletedVoxel);
+      io.to(voxel.roomName).emit('delete voxel', deletedVoxel);
     } catch (error) {
       console.error("Error deleting voxel:", error);
     }
