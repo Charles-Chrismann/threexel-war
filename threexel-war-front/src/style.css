@@ -249,3 +249,34 @@ canvas {
 .delete::after {
   content: "Mode suppression";
 }
+
+.ui-controls{
+  position: fixed;
+  bottom: 5vh;
+  left: 2rem;
+  background-color: white;
+  border-radius: 10px;
+  padding: 10px 20px;
+  border:2px solid rgb(148, 148, 207);
+  cursor: pointer;
+}
+
+.controls {
+  position: absolute;
+  top: -120px;
+  left: 0;
+  width: 320px;
+  background-color: white;
+  border-radius: 10px;
+  padding: 14px;
+  cursor: default;
+  display: none;
+}
+
+.controls p{
+  margin-bottom: 6px;
+}
+
+.ui-controls:hover .controls {
+  display: block;
+}
