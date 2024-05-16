@@ -47,6 +47,7 @@ io.on('connection', (socket) => {
   })
 
   socket.on('join room', async (roomId: string) => {
+    console.log(roomId)
     socket.rooms.forEach(room => {if (room !== socket.id) {socket.leave(room);}});
     socket.join(roomId)
     const roomData = await prisma.map.findFirst({

@@ -332,6 +332,7 @@ document.querySelector('#switch-room')!.addEventListener('click', async () => {
   if(inputEl.value === '') return
   localStorage.setItem('room', inputEl.value)
   roomName = inputEl.value
+  socket.emit('join room', inputEl.value)
 
   loadAndResetScene()
 })
