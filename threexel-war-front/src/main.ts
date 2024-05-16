@@ -5,6 +5,7 @@ import {socket, reloadSocket} from './socket';
 import { getAllMaps } from './utils';
 import { Map } from './types';
 import { MicroScene } from './MicroScene';
+import { int } from 'three/examples/jsm/nodes/Nodes.js';
 
 let roomName = localStorage.getItem('room')
 
@@ -51,6 +52,8 @@ let raycaster : THREE.Raycaster;
 let isShiftDown = false;
 let isRDown = false;
 
+let lastHoveredVoxel: THREE.Object3D | null = null;
+
 let rollOverMesh : THREE.Mesh;
 let rollOverMaterial : THREE.MeshBasicMaterial;
 let cubeGeo : THREE.BoxGeometry;
@@ -66,6 +69,8 @@ let maps : Map[] = []
 
 const authorization = localStorage.getItem('authorization')
 const pointerOpacity = authorization ? 0.5 : 0
+
+const modeIndicator = document.querySelector('.ui-mode') as HTMLDivElement
 
 colorsPalette.forEach((color) => {
   const button = document.createElement('button')
@@ -205,20 +210,35 @@ function onWindowResize() {
   renderer.setSize( window.innerWidth, window.innerHeight );
 }
 
-function onPointerMove( event: MouseEvent) {
-  const x = (event.clientX - (event.target as HTMLElement).offsetLeft) / (event.target as HTMLElement).clientWidth
-  const y = (event.clientY - (event.target as HTMLElement).offsetTop) / (event.target as HTMLElement).clientHeight
-  // pointer.set( ( event.clientX / window.innerWidth ) * 2 - 1, - ( event.clientY / window.innerHeight ) * 2 + 1 );
+function onPointerMove(event: MouseEvent) {
+  const x = (event.clientX - (event.target as HTMLElement).offsetLeft) / (event.target as HTMLElement).clientWidth;
+  const y = (event.clientY - (event.target as HTMLElement).offsetTop) / (event.target as HTMLElement).clientHeight;
+  pointer.set(x * 2 - 1, -y * 2 + 1);
+  raycaster.setFromCamera(pointer, camera);
 
-  pointer.set( x * 2 - 1, - y * 2 + 1 );
-  raycaster.setFromCamera( pointer, camera );
-  const intersects = raycaster.intersectObjects( objects, false );
-  if ( intersects.length > 0 ) {
-    const intersect = intersects[ 0 ];
-    rollOverMesh.position.copy( intersect.point ).add( intersect.face!.normal );
-    rollOverMesh.position.divideScalar( 50 ).floor().multiplyScalar( 50 ).addScalar( 25 );
+  const intersects = raycaster.intersectObjects(objects, false);
+  if (intersects.length > 0) {
+    const intersect = intersects[0];
+    rollOverMesh.position.copy(intersect.point).add(intersect.face!.normal);
+    rollOverMesh.position.divideScalar(50).floor().multiplyScalar(50).addScalar(25);
+  }
+
+  if (isRDown || isShiftDown) {
+    const intersects = raycaster.intersectObjects(objects, false);
+    if (intersects.length > 0) {
+      const intersect = intersects[0];
+      if (intersect.object !== plane) {
+        if (lastHoveredVoxel !== intersect.object) {
+          intersect.object.material.opacity = 0.5;
+
+          resetlastHoveredVoxel();
+          lastHoveredVoxel = intersect.object;
+        }
+      }
+    }
   }
 }
+
 
 function onPointerDown( event: MouseEvent) {
   pointer.set( ( event.clientX / window.innerWidth ) * 2 - 1, - ( event.clientY / window.innerHeight ) * 2 + 1 );
@@ -272,39 +292,53 @@ function onPointerDown( event: MouseEvent) {
     // create cube
     else {
 
-      let cubeMaterial = new THREE.MeshBasicMaterial( { color: colorPicker.value } );
+      const voxelPosition = intersect.point.clone().add(intersect.face!.normal);
+      voxelPosition.divideScalar(50).floor().multiplyScalar(50).addScalar(25);
 
-      const voxel = new THREE.Mesh( cubeGeo, cubeMaterial );
-      voxel.position.copy( intersect.point ).add( intersect.face!.normal );
-      voxel.position.divideScalar( 50 ).floor().multiplyScalar( 50 ).addScalar( 25 );
-      console.log(voxel.position)
-      socket.emit('place', { 
-        x: voxel.position.x,
-        y: voxel.position.y,
-        z: voxel.position.z,
+      const voxel = {
+        x: voxelPosition.x,
+        y: voxelPosition.y,
+        z: voxelPosition.z,
         color: colorPicker.value,
         roomName
-      })
-      // scene.add( voxel );
+      };
 
-      // objects.push( voxel );
-
+      setVoxel(voxel);
+      socket.emit('place', voxel);
     }
   }
 }
 
 function onDocumentKeyDown( event: KeyboardEvent) {
   switch ( event.key ) {
-    case 'Shift': isShiftDown = true; break;
-    case 'r': isRDown = true; break;
     case 'Tab': toggleMapsTab(); break;
+    case 'Shift': 
+      isShiftDown = true;
+      rollOverMaterial.opacity = 0;
+      setMode('delete');
+      break;
+    case 'r': 
+      isRDown = true; 
+      rollOverMaterial.opacity = 0;
+      setMode('edit');
+      break;
   }
 }
 
 function onDocumentKeyUp( event: KeyboardEvent ) {
   switch ( event.key ) {
-    case 'Shift': isShiftDown = false; break;
-    case 'r': isRDown = false; break;
+    case 'Shift': 
+      isShiftDown = false;
+      rollOverMaterial.opacity = pointerOpacity;
+      resetlastHoveredVoxel();
+      setMode('placement');
+      break;
+    case 'r': 
+      isRDown = false; 
+      rollOverMaterial.opacity = pointerOpacity;
+      resetlastHoveredVoxel();
+      setMode('placement');
+      break;
   }
 }
 
@@ -315,7 +349,7 @@ function render() {
 }
 
 function setVoxel(voxelData: any) {
-  let cubeMaterial = new THREE.MeshBasicMaterial( { color: voxelData.color } );
+  let cubeMaterial = new THREE.MeshBasicMaterial( { color: voxelData.color, transparent:true, opacity:1 } );
 
   const voxel = new THREE.Mesh( cubeGeo, cubeMaterial );
   voxel.position.set(voxelData.x, voxelData.y, voxelData.z)
@@ -367,4 +401,16 @@ async function toggleMapsTab() {
       })
     })
   }
+}
+
+function resetlastHoveredVoxel() {
+  if (lastHoveredVoxel) {
+    lastHoveredVoxel.material.opacity = 1;
+    lastHoveredVoxel = null;
+  }
+}
+
+function setMode(mode: string) {
+  modeIndicator.className = '';
+  modeIndicator.classList.add('ui-mode', mode)
 }

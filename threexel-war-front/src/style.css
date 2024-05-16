@@ -213,3 +213,39 @@ canvas {
   cursor: pointer;
   display: block;
 }
+
+.ui-mode {
+  position: absolute;
+  top: 2rem;
+  left: 2rem;
+  background-color: white;
+  border-radius: 10px;
+  padding: 10px 20px; 
+}
+.ui-mode::after{
+  font-weight: bold;
+}
+
+.placement {
+  border: 2px solid #16a394;
+}
+
+.placement::after {
+  content: "Mode placement";
+}
+
+.edit {
+  border: 2px solid #f6ad55;
+}
+
+.edit::after {
+  content: "Mode edition";
+}
+
+.delete {
+  border: 2px solid #f56565;
+}
+
+.delete::after {
+  content: "Mode suppression";
+}
