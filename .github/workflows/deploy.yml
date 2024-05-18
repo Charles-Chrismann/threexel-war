@@ -23,6 +23,7 @@ jobs:
           username: ${{ secrets.USERNAME }}
           key: ${{ secrets.KEY }}
           source: "threexel-war-front/dist/*"
+          strip_components: 2
           target: ~/threexel-war/threexel-war-front/dist
 
       - name: SSH into server and execute commands
