@@ -89,9 +89,11 @@ if(!authorization) {
   const changeForm = document.querySelector('#change-form') as HTMLButtonElement
   const confirmPassword = document.querySelector('#confirm-password') as HTMLInputElement
   const submitButton = document.querySelector('#submit-auth') as HTMLButtonElement
+  const loginButton = document.querySelector('#submit-auth') as HTMLButtonElement
 
   changeForm.onclick = () => {
     changeForm.textContent = changeForm.textContent === "S'inscrire" ? "Se connecter" : "S'inscrire";
+    loginButton.textContent = changeForm.textContent === "S'inscrire" ? "Connexion" : "Inscription";
     confirmPassword.classList.toggle('active');
   }
 
@@ -111,7 +113,7 @@ if(!authorization) {
       headers: {
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify({ username, password })
+      body: JSON.stringify({ username, password, confirmPassword })
     })
     const res = await resLoging.json()
     if(res.status !== '200') {

@@ -12,7 +12,8 @@ router.get("/", (request: Request, response: Response) => {
 
 router.post("/register", async (req: Request, res: Response) => {
   try {
-    const { username, password } = req.body
+    const { username, password, confirmPassword } = req.body
+    if(password !== confirmPassword) return res.status(400).send({'status': '400', 'message': 'Les mots de passe ne correspondent pas'})
     const passwordHash = await hash(password, 10)
     const user = await prisma.user.create({
       data: {
