@@ -22,7 +22,7 @@ jobs:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USERNAME }}
           key: ${{ secrets.KEY }}
-          source: "./threexel-war-front/dist/*"
+          source: "threexel-war-front/dist/*"
           target: ~/threexel-war/threexel-war-front/dist
 
       - name: SSH into server and execute commands
