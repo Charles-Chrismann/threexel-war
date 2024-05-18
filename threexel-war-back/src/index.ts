@@ -2,6 +2,8 @@ import 'dotenv/config'
 import { PrismaClient } from "@prisma/client";
 import express, { Request, Response } from "express";
 import * as http from 'http'
+import * as https from 'http'
+import * as fs from 'fs'
 import { Server, Socket } from 'socket.io'
 import { compare, hash } from 'bcrypt'
 import { sign, verify } from 'jsonwebtoken'
@@ -26,6 +28,18 @@ const server = http.createServer(app)
 const io = new Server(server)
 
 const PORT = process.env.PORT || 3000;
+
+const privateKey = fs.readFileSync(process.env.PRIVKEY_PATH!, 'utf8');
+const certificate = fs.readFileSync(process.env.CERT_PATH!, 'utf8');
+const ca = fs.readFileSync(process.env.CHAIN_PATH!, 'utf8');
+
+const credentials = {
+	key: privateKey,
+	cert: certificate,
+	ca: ca
+};
+
+const httpsServer = https.createServer(credentials as any, app);
 
 app.use(express.json())
 app.use(express.static('../threexel-war-front/dist'));
@@ -161,4 +175,8 @@ server.listen(PORT, () => {
 }).on("error", (error) => {
   // gracefully handle error
   throw new Error(error.message);
+});
+
+httpsServer.listen(process.env.HTTPS_PORT, () => {
+	console.log(`HTTPS Server running on port ${process.env.HTTPS_PORT}`);
 });
