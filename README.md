@@ -1,6 +1,6 @@
 # THREEXEL-WAR
 
-Threexel-war is project made by [@Tom-Tamen](#https://github.com/tom-tamen) and [@Charles-Chrismann](#https://github.com/charles-chrismann) in order to learn real time interactions between a server and one or plus clients.
+Threexel-war is project made by [@Tom-Tamen](https://github.com/tom-tamen) and [@Charles-Chrismann](https://github.com/charles-chrismann) in order to learn real time interactions between a server and one or plus clients.
 
 The main dependencies are:
   - Backend:
