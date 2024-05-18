@@ -1,0 +1,20 @@
+{
+  "name": "threexel-war",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+
+    "dev:front": "cd threexel-war-front/ && npm run dev",
+    "build:front": "cd threexel-war-front/ && npm run build",
+
+    "dev:back": "cd threexel-war-back/ && npm run dev",
+    "build:back": "cd threexel-war-back/ && npm run build",
+    "start:back": "cd threexel-war-back/ && npm run start",
+    "start:back:ts": "cd threexel-war-back/ && npm run start:ts"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}
