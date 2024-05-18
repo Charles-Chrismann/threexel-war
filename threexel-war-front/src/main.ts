@@ -5,7 +5,6 @@ import {socket, reloadSocket} from './socket';
 import { getAllMaps } from './utils';
 import { Map } from './types';
 import { MicroScene } from './MicroScene';
-import { int } from 'three/examples/jsm/nodes/Nodes.js';
 
 let roomName = localStorage.getItem('room')
 
@@ -52,7 +51,7 @@ let raycaster : THREE.Raycaster;
 let isShiftDown = false;
 let isRDown = false;
 
-let lastHoveredVoxel: THREE.Object3D | null = null;
+let lastHoveredVoxel: THREE.Object3D | THREE.Mesh | null = null;
 
 let rollOverMesh : THREE.Mesh;
 let rollOverMaterial : THREE.MeshBasicMaterial;
@@ -228,7 +227,7 @@ function onPointerMove(event: MouseEvent) {
     if (intersects.length > 0) {
       const intersect = intersects[0];
       if (intersect.object !== plane) {
-        if (lastHoveredVoxel !== intersect.object) {
+        if (lastHoveredVoxel !== intersect.object && intersect.object instanceof THREE.Mesh) {
           intersect.object.material.opacity = 0.5;
 
           resetlastHoveredVoxel();
@@ -404,7 +403,8 @@ async function toggleMapsTab() {
 }
 
 function resetlastHoveredVoxel() {
-  if (lastHoveredVoxel) {
+  if (lastHoveredVoxel && lastHoveredVoxel instanceof THREE.Mesh) {
+    console.log(lastHoveredVoxel)
     lastHoveredVoxel.material.opacity = 1;
     lastHoveredVoxel = null;
   }
