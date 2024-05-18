@@ -11,6 +11,9 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
   </head>
   <body>
+    <div class="disable-mobile">
+      <p>Threexel war n'est pas disponible sur mobile pour le moment.</p>
+    </div>
     <div id="app">
       <canvas></canvas>
       <div class="auth" style="display: none;">
@@ -30,8 +33,11 @@
         <div id="palette"></div>
       </div>
       <div class="ui-room">
-        <input type="text">
+        <label for="input-room">Nom de la salle :</label>
+        <div>
+        <input id="input-room" type="text">
         <button id="switch-room">Go</button>
+      </div>
       </div>
       <div class="ui-mode placement">
       </div>

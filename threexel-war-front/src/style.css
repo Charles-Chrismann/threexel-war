@@ -11,13 +11,14 @@
 
 #app .ui-room {
   display: flex;
+  flex-direction: column;
   gap: 0.5rem;
   position: absolute;
   top: 2rem;
   right: 2rem;
   background-color: white;
-  border: solid #16a394;
-  border-radius: 1.5rem;
+  border: solid 2px #16a394;
+  border-radius: 10px;
   padding: 1rem;
 }
 
@@ -70,8 +71,8 @@ canvas {
 .ui-bar{
   position: fixed;
   bottom: 5vh;
-  left: 50%;
-  transform: translateX(-50%);
+  right: 50%;
+  transform: translateX(50%);
   width: 50%;
   height: 60px;
   background-color: #ffffff;
@@ -82,6 +83,14 @@ canvas {
   align-items: center;
   padding: 0 20px;
   border-radius: 500px;
+}
+
+@media screen and (max-width: 1400px) {
+  .ui-bar{
+    width: 76%;
+    right: 2rem;
+    transform: translateX(0);
+  }
 }
 
 .color-button {
@@ -189,13 +198,6 @@ canvas {
   background-color: rgb(129, 129, 180);
 }
 
-@media screen and (max-width: 1300px) {
-  .ui-bar{
-    width: 90%;
-  }
-  
-}
-
 #app #maps {
   position: absolute;
   inset: 2rem;
@@ -252,7 +254,7 @@ canvas {
 
 .ui-controls{
   position: fixed;
-  bottom: 5vh;
+  bottom: 7%;
   left: 2rem;
   background-color: white;
   border-radius: 10px;
@@ -279,4 +281,29 @@ canvas {
 
 .ui-controls:hover .controls {
   display: block;
+}
+
+.disable-mobile{
+  width: 100vw;
+  height: 100vh;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 1000;
+  background-color: rgb(249, 249, 249);
+  display: none;
+}
+
+.disable-mobile p{
+  font-size: 20px;
+  text-align: center;
+  margin-top: 50vh;
+  padding: 10px;
+}
+
+@media screen and (max-width: 994px) {
+  .disable-mobile{
+    display: block;
+  }
+  
 }
