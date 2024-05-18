@@ -2,6 +2,8 @@
 
 Threexel-war is project made by [@Tom-Tamen](https://github.com/tom-tamen) and [@Charles-Chrismann](https://github.com/charles-chrismann) in order to learn real time interactions between a server and one or plus clients.
 
+It is inspired by the reddit sub r/place (also know as pixel-war, here three for three.js), it is a simple pixel war in 3 dimensions with multiple socket.io rooms.
+
 The main dependencies are:
   - Backend:
     - express
