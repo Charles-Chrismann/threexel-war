@@ -4,11 +4,12 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      uses: appleboy/ssh-action@v1.0.3
-      with: 
-        host: ${{ secrets.HOST }}
-        username: ${{ secrets.USERNAME }}
-        key: ${{ secrets.KEY }}
-        script: |
-          whoami
-          ls -al
+      - name: SSH into server and execute commands
+        uses: appleboy/ssh-action@v1.0.3
+        with: 
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.KEY }}
+          script: |
+            whoami
+            ls -al
