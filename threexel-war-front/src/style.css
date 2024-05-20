@@ -203,7 +203,7 @@ canvas {
   inset: 2rem;
   background-color: white;
   border: solid 2px #16a394;
-  border-radius: 1.5rem;
+  border-radius: 10px;
   overflow: hidden;
   padding: 1rem;
   gap: 1rem;
@@ -265,7 +265,7 @@ canvas {
 
 .controls {
   position: absolute;
-  top: -120px;
+  top: -150px;
   left: 0;
   width: 320px;
   background-color: white;
