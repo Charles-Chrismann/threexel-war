@@ -37,14 +37,19 @@ socket.on('delete voxel', (voxel) => {
   objects.splice(objects.indexOf(voxelToDelete), 1)
 })
 
-fetch('/api/maps/' + roomName).then(res => res.json()).then((res: any) => {
-  res.forEach((voxel: any) => setVoxel(voxel))
+fetch('/api/maps/' + roomName).then(res => res.json()).then((res: Map) => {
+  currentMap = res
+  setHistoryCursorAttributes()
+  res.voxels.forEach((voxel) => setVoxel(voxel))
 })
 
 let camera: THREE.PerspectiveCamera;
 let scene: THREE.Scene;
 let renderer: THREE.WebGLRenderer;
-let canvas: HTMLCanvasElement = document.querySelector('canvas')!;
+const canvas: HTMLCanvasElement = document.querySelector('canvas')!;
+const historyInput = document.querySelector('.ui-history input[type="range"]')! as HTMLInputElement
+const uiBar = document.querySelector('.ui-bar')! as HTMLDivElement
+const uiControls = document.querySelector('.ui-controls')! as HTMLDivElement
 let plane : THREE.Mesh;
 let pointer : THREE.Vector2;
 let raycaster : THREE.Raycaster;
@@ -65,6 +70,8 @@ const colorPicker = document.querySelector('#color-picker') as HTMLInputElement
 
 const mapsTab = document.querySelector('#maps')! as HTMLDivElement
 let maps : Map[] = []
+let currentMap: Map
+
 
 const authorization = localStorage.getItem('authorization')
 const pointerOpacity = authorization ? 0.5 : 0
@@ -311,6 +318,7 @@ function onPointerDown( event: MouseEvent) {
 }
 
 function onDocumentKeyDown( event: KeyboardEvent) {
+  if(modeIndicator.classList.contains('history')) return
   switch ( event.key ) {
     case 'Tab': toggleMapsTab(); break;
     case 'Shift': 
@@ -327,6 +335,7 @@ function onDocumentKeyDown( event: KeyboardEvent) {
 }
 
 function onDocumentKeyUp( event: KeyboardEvent ) {
+  if(modeIndicator.classList.contains('history')) return
   switch ( event.key ) {
     case 'Shift': 
       isShiftDown = false;
@@ -374,10 +383,30 @@ document.querySelector('#switch-room')!.addEventListener('click', async () => {
 
 async function loadAndResetScene() {
   const res = await fetch('/api/maps/' + roomName)
-  const voxels = await res.json()
+  const map = await res.json() as Map
+  currentMap = map
+  setHistoryCursorAttributes()
   init()
-  voxels.forEach((voxel: any) => setVoxel(voxel))
+  map.voxels.forEach((voxel) => setVoxel(voxel))
 }
+
+function setHistoryCursorAttributes() {
+  const startDate = new Date(currentMap.createdAt)
+  historyInput.min = String(startDate.getTime())
+  historyInput.max = String(Date.now())
+  historyInput.value = historyInput.max
+  // historyInput.step = String(10000000)
+  historyInput.step = String((+historyInput.max - +historyInput.min) / 100)
+}
+
+historyInput.addEventListener('input', () => {
+  const date = new Date(+historyInput.value)
+  const filtered = currentMap.voxels.filter(voxel => voxel.createdAt <= date.toISOString() && voxel.createdAt === voxel.updatedAt)
+  objects.forEach(obj => scene.remove(obj))
+  objects = []
+  console.log(objects)
+  filtered.forEach(voxel => setVoxel(voxel))
+})
 
 async function toggleMapsTab() {
   if(mapsTab.style.display === 'grid') {
@@ -415,4 +444,13 @@ function resetlastHoveredVoxel() {
 function setMode(mode: string) {
   modeIndicator.className = '';
   modeIndicator.classList.add('ui-mode', mode)
+}
+console.log(modeIndicator.textContent)
+function toggleHistoryMode() {
+  historyInput.classList.toggle('hide')
+  modeIndicator.classList.toggle('history')
+  modeIndicator.classList.toggle('placement')
+  rollOverMesh.visible = rollOverMesh.visible === false ? true : false
+  uiBar.classList.toggle('hide')
+  uiControls.classList.toggle('hide')
 }

@@ -85,7 +85,7 @@ router.get('/maps/:roomName', async (req: Request, res: Response) => {
         }
       }
     })
-    res.send(map?.voxels)
+    res.send(map)
   } catch (error) {
     res.sendStatus(404)
   }

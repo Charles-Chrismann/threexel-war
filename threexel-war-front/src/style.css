@@ -252,6 +252,10 @@ canvas {
   content: "Mode suppression";
 }
 
+.history::after {
+  content: "Mode historique";
+}
+
 .ui-controls{
   position: fixed;
   bottom: 7%;
@@ -306,4 +310,8 @@ canvas {
     display: block;
   }
   
+}
+
+.hide {
+  display: none;
 }
