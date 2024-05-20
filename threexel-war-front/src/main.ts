@@ -445,7 +445,7 @@ function setMode(mode: string) {
   modeIndicator.className = '';
   modeIndicator.classList.add('ui-mode', mode)
 }
-console.log(modeIndicator.textContent)
+console.log(toggleHistoryMode)
 function toggleHistoryMode() {
   historyInput.classList.toggle('hide')
   modeIndicator.classList.toggle('history')
