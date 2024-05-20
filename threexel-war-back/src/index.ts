@@ -27,6 +27,7 @@ const app = express();
 const server = http.createServer(app)
 const httpsServer = https.createServer(credentials as any, app);
 const io = createIoServer(server)
+const httpsIo = createIoServer(httpsServer)
 
 app.use(express.json())
 app.use(express.static('../threexel-war-front/dist'));
@@ -45,4 +46,4 @@ else {
   }).on("error", (error) => {
     throw new Error(error.message);
   });
-} 
+}
