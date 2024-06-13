@@ -43,5 +43,5 @@ jobs:
             npm i
             npx prisma migrate reset -f
             npm run build
-            pm2 restart threewel-war
+            pm2 restart threexel-war
 
