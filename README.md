@@ -67,3 +67,7 @@ npm run start:back
 # root
 npm run build:front
 ```
+
+## License
+
+This project is [MIT licensed](LICENSE).
